@@ -1,10 +1,10 @@
 const express = require('express');
 
+const userRouter = require('./routers/userRouter');
+
 const app = express();
 
-app.get('/', (req, res) => {
-   res.end('Server Running');
-});
+app.use('/api/v1/users', userRouter);
 
 const port = process.env.PORT || 3000;
 
