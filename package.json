@@ -17,6 +17,7 @@
       "validator": "^13.5.2"
    },
    "devDependencies": {
+      "morgan": "^1.10.0",
       "ndb": "^1.1.5"
    }
 }
