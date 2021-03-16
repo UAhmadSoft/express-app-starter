@@ -1,11 +1,19 @@
 {
-  "name": "express-app-starter",
-  "version": "1.0.0",
-  "description": "Starter Project for an Express App",
-  "main": "app.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC"
+   "name": "express-app-starter",
+   "version": "1.0.0",
+   "description": "Starter Project for an Express App",
+   "main": "app.js",
+   "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+   },
+   "author": "",
+   "license": "ISC",
+   "dependencies": {
+      "dotenv": "^8.2.0",
+      "express": "^4.17.1",
+      "mongoose": "^5.12.0"
+   },
+   "devDependencies": {
+      "ndb": "^1.1.5"
+   }
 }
