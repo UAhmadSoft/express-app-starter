@@ -1,45 +1,73 @@
-const dotenv = require('dotenv');
-dotenv.config({ path: './config.env' });
-
 const express = require('express');
-const morgan = require('morgan');
+const app = express();
 const cors = require('cors');
-const bodyParser = require('body-parser');
-
-const DBConnect = require('./utils/dbConnect');
+const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const path = require('path');
+const hpp = require('hpp');
 
 const userRouter = require('./routers/userRouter');
+const indexRoutes = require('./routers/indexRoutes');
+
 const globalErrorHandler = require('./middlewares/globalErrorHandler');
 
-const app = express();
+const AppError = require('./utils/appError');
 
-// * Connect DB
-DBConnect();
+// view engine setup
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
-// * Handle Static Files
-app.use(express.static(`${__dirname}/public`));
+app.use(express.json());
 
-// * MiddleWares
+console.log(process.env.NODE_ENV);
+
+// set security http headers
+app.use(helmet());
+
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
 // $ CORS
 app.use(cors());
 
-// $ Body Parser
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
+//  set limit request from same API in timePeroid from same ip
+const limiter = rateLimit({
+  max: 100, //   max number of limits
+  windowMs: 60 * 60 * 1000, // hour
+  message: ' Too many req from this IP , please Try  again in an Hour ! ',
+});
 
-// parse application/json
-app.use(bodyParser.json());
+app.use('/api', limiter);
 
-//$ Development Logging
-if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
+//  Body Parser  => reading data from body into req.body protect from scraping etc
+app.use(express.json({ limit: '10kb' }));
 
-// * Routes
+// Data sanitization against NoSql query injection
+app.use(mongoSanitize()); //   filter out the dollar signs protect from  query injection attact
+
+// Data sanitization against XSS
+app.use(xss()); //    protect from molision code coming from html
+
+// testing middleware
+app.use((req, res, next) => {
+  console.log('this is a middleware');
+  next();
+});
+
+// routes
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1', indexRoutes);
 
-//$ Global Error Handler
+// handling all (get,post,update,delete.....) unhandled routes
+app.all('*', (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on the server`, 404));
+});
+
+// error handling middleware
 app.use(globalErrorHandler);
 
-const port = process.env.PORT || 3000;
-
-app.listen(port, () => console.log(`listening to port ${port}`));
+module.exports = app;
