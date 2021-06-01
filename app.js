@@ -10,7 +10,7 @@ const path = require('path');
 const hpp = require('hpp');
 
 const userRouter = require('./routers/userRouter');
-const indexRoutes = require('./routers/indexRoutes');
+const authRoutes = require('./routers/authRoutes');
 
 const globalErrorHandler = require('./middlewares/globalErrorHandler');
 
@@ -38,7 +38,8 @@ app.use(cors());
 const limiter = rateLimit({
   max: 100, //   max number of limits
   windowMs: 60 * 60 * 1000, // hour
-  message: ' Too many req from this IP , please Try  again in an Hour ! ',
+  message:
+    ' Too many req from this IP , please Try  again in an Hour ! ',
 });
 
 app.use('/api', limiter);
@@ -59,12 +60,14 @@ app.use((req, res, next) => {
 });
 
 // routes
-app.use('/api/v1/users', userRouter);
-app.use('/api/v1', indexRoutes);
+app.use('/api/users', userRouter);
+app.use('/api/auth', authRoutes);
 
 // handling all (get,post,update,delete.....) unhandled routes
 app.all('*', (req, res, next) => {
-  next(new AppError(`Can't find ${req.originalUrl} on the server`, 404));
+  next(
+    new AppError(`Can't find ${req.originalUrl} on the server`, 404)
+  );
 });
 
 // error handling middleware
