@@ -12,16 +12,14 @@ const signToken = (id) => {
   });
 };
 
-const creatsendToken = (user, statusCode, res) => {
+const createsendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
   // Remove the password from output
   user.password = undefined;
   res.status(statusCode).json({
     status: 'success',
     token,
-    data: {
-      user,
-    },
+    user,
   });
 };
 
@@ -64,8 +62,12 @@ exports.signup = catchAsync(async (req, res, next) => {
     template: 'signupEmail.ejs',
     url: activationURL,
   });
-
-  creatsendToken({ ...user }, 201, res);
+  res.status(200).json({
+    status: 'Success',
+    message: `Email Verification Link Successfully Sent to you email ${user.email}`,
+    user,
+  });
+  // createsendToken(user, 201, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -104,7 +106,7 @@ exports.login = catchAsync(async (req, res, next) => {
     );
 
   // if eveything is ok
-  creatsendToken({ ...user }, 200, res);
+  createsendToken(user, 200, res);
 });
 
 exports.confirmMail = catchAsync(async (req, res) => {
@@ -256,5 +258,5 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   // 4) Log user in , send JWT
-  creatsendToken({ ...user }, 200, res);
+  createsendToken(user, 200, res);
 });
