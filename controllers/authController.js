@@ -42,7 +42,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   if (process.env.NODE_ENV === 'development')
     activationURL = `${req.protocol}:\/\/${req.get(
       'host'
-    )}/api/confirmMail/${activationToken}`;
+    )}/api/auth/confirmMail/${activationToken}`;
   else
     activationURL = `${req.protocol}:\/\/${req.get(
       'host'
@@ -214,7 +214,9 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   // 2 Check if user still exists and token is NOT Expired
   if (!user)
-    return next(new AppError(`Activation Link Invalid or Expired !`));
+    return next(
+      new AppError(`Reset Password Link Invalid or Expired !`)
+    );
 
   // 3 Change Password and Log the User in
   const { password, passwordConfirm } = req.body;
@@ -223,13 +225,18 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   user.password = password;
   user.passwordConfirm = passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
 
-  await user.save({ runValidators: false });
+  await user.save();
 
   const token = signToken(user._id);
 
+  // * If you don't want the user to be logged In after pass reset
+  // * Remove token from respone
   res.status(200).json({
     status: 'success',
+    token,
   });
 });
 
