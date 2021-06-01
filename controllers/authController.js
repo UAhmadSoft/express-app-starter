@@ -69,7 +69,7 @@ exports.signup = catchAsync(async (req, res, next) => {
       url: activationURL,
    });
 
-   creatsendToken(user, 201, res);
+   creatsendToken({ ...user }, 201, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -108,7 +108,7 @@ exports.login = catchAsync(async (req, res, next) => {
       );
 
    // if eveything is ok
-   creatsendToken(user, 200, res);
+   creatsendToken({ ...user }, 200, res);
 });
 
 exports.confirmMail = catchAsync(async (req, res) => {
@@ -264,8 +264,6 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
    await user.save();
 
-   const profile = getProfile(user);
-
    // 4) Log user in , send JWT
-   creatsendToken(profile, 200, res);
+   creatsendToken({ ...user }, 200, res);
 });
